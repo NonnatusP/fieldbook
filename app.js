@@ -304,10 +304,26 @@
     const k = el.dataset.k; const v = (k === 'inst' || k === 'fmt') ? el.value : parseFloat(el.value);
     if (k === 'inst' || k === 'fmt' || isFinite(v)) S[k] = v; save('settings', S); setHdr(); renderLive(); renderList(); if (k === 'fmt') $('fmtHint').textContent = '';
   }));
-  $('preset').addEventListener('click', () => {
-    Object.assign(S, { a: 2, b: 2, ar: 3, br: 2, idx: 2, c2: 8, ang: 2 }); if (!S.inst) S.inst = 'South NTS-571R15';
-    save('settings', S); renderSettings(); toast('NTS-500 series values applied');
+  const INS = window.SurveyInstruments;
+  const LIMITS = ['a', 'b', 'ar', 'br', 'idx', 'c2', 'ang'];
+  function buildInstSel() {
+    const sel = $('instSel'); let h = '<option value="custom">Custom (enter values below)</option>';
+    const brands = []; INS.LIST.forEach(x => { if (brands.indexOf(x.brand) < 0) brands.push(x.brand); });
+    brands.forEach(b => { h += '<optgroup label="' + b + '">' + INS.LIST.filter(x => x.brand === b).map(x => '<option value="' + x.id + '">' + x.model + '</option>').join('') + '</optgroup>'; });
+    sel.innerHTML = h; syncInstSel();
+  }
+  function syncInstSel() {
+    const x = INS.get(S.spec); $('instSel').value = x ? x.id : 'custom';
+    $('instNote').textContent = x ? 'Source: ' + x.src + '. Index limit ' + x.idx + '\u2033 and 2C limit ' + x.c2 + '\u2033 are derived from the angle accuracy, not published. ' + x.note : 'Pick your total station to fill the limits below. Edit any value to make it custom.';
+  }
+  $('instSel').addEventListener('change', () => {
+    const x = INS.get($('instSel').value);
+    if (x) { LIMITS.forEach(k => { S[k] = x[k]; }); S.inst = x.brand.replace(/ \(.*\)/, '') + ' ' + x.model; S.spec = x.id; }
+    else S.spec = 'custom';
+    save('settings', S); renderSettings(); syncInstSel(); renderLive(); renderList(); toast(x ? x.model + ' applied' : 'Custom values');
   });
+  document.querySelectorAll('[data-k]').forEach(el => el.addEventListener('input', () => { if (LIMITS.indexOf(el.dataset.k) >= 0 && S.spec) { S.spec = ''; save('settings', S); syncInstSel(); } }));
+  buildInstSel();
   const HEAD = ['Station', 'Point', 'Zenith L', 'HA L', 'SD L', 'HD L', 'Zenith R', 'HA R', 'SD R', 'HD R', 'Target', 'SD diff L-R (mm)', 'HD diff L-R (mm)', 'Index (sec)', '2C (sec)'];
   $('expCsv').addEventListener('click', () => {
     if (!D.length) { toast('No readings to export'); return; }

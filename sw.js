@@ -1,6 +1,6 @@
 /* Cache-first service worker so the app works with no signal. Bump VERSION when files change. */
-const VERSION = 'sfk-v7';
-const FILES = ['./', './index.html', './style.css', './core.js', './app.js', './manifest.webmanifest',
+const VERSION = 'sfk-v8';
+const FILES = ['./', './index.html', './style.css', './core.js', './instruments.js', './app.js', './manifest.webmanifest',
   './icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-512.png', './icons/favicon.png'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(VERSION).then(c => c.addAll(FILES)).then(() => self.skipWaiting())); });
 self.addEventListener('activate', e => {

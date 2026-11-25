@@ -120,8 +120,9 @@
   <div class="card">
     <label for="inst">Instrument or job name</label>
     <input id="inst" data-k="inst" autocomplete="off" placeholder="South NTS-571R15, Nithi Bridge">
-    <div class="btns"><button id="preset" class="sec">Apply NTS-500 series spec</button></div>
-    <p class="small">Sets prism &plusmn;(2 mm + 2 ppm), reflectorless &plusmn;(3 mm + 2 ppm) and a 2&Prime; angle accuracy. The index limit (2&Prime;) and 2C limit (8&Prime;) are my assumptions scaled from that accuracy, not manufacturer figures.</p>
+    <label for="instSel">Instrument model</label>
+    <select id="instSel"></select>
+    <p class="small" id="instNote">Pick your total station to fill the limits below. Edit any value to make it custom.</p>
     <div class="row2">
       <div><label for="s_a">Prism, fixed part (mm)</label><input id="s_a" data-k="a" inputmode="decimal"></div>
       <div><label for="s_b">Prism, per km (ppm)</label><input id="s_b" data-k="b" inputmode="decimal"></div>
@@ -160,6 +161,7 @@
 </nav>
 <div id="toast" role="status"></div>
 <script src="core.js"></script>
+<script src="instruments.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
