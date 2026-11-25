@@ -160,7 +160,7 @@
     $('tRows').innerHTML = T.rows.map((r, i) => '<div class="tgrid"><input data-r="' + i + '" data-f="n" value="' + esc(r.n) + '" autocapitalize="characters" autocomplete="off">' +
       '<input data-r="' + i + '" data-f="a" value="' + esc(r.a) + '" inputmode="decimal" autocomplete="off">' +
       '<input data-r="' + i + '" data-f="d" value="' + esc(r.d) + '" inputmode="decimal" autocomplete="off"' + (link && i === T.rows.length - 1 ? ' disabled placeholder="end"' : '') + '></div>').join('');
-    $('hDist').textContent = link ? 'HD to next (m)' : 'HD to next (m, last returns to first)';
+    $('hDist').textContent = link ? 'HD to next (m)' : 'HD to next (m)';
   }
   function renderTrav() {
     renderTravInputs(); computeTrav();

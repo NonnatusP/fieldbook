@@ -123,17 +123,17 @@
     <label for="instSel">Instrument model</label>
     <select id="instSel"></select>
     <p class="small" id="instNote">Pick your total station to fill the limits below. Edit any value to make it custom.</p>
-    <div class="row2">
-      <div><label for="s_a">Prism, fixed part (mm)</label><input id="s_a" data-k="a" inputmode="decimal"></div>
-      <div><label for="s_b">Prism, per km (ppm)</label><input id="s_b" data-k="b" inputmode="decimal"></div>
-      <div><label for="s_ar">Reflectorless, fixed (mm)</label><input id="s_ar" data-k="ar" inputmode="decimal"></div>
-      <div><label for="s_br">Reflectorless, per km (ppm)</label><input id="s_br" data-k="br" inputmode="decimal"></div>
-      <div><label for="s_idx">Index error limit (&Prime;)</label><input id="s_idx" data-k="idx" inputmode="decimal"></div>
+    <div class="set-grid">
+      <div><label for="s_a">Prism (mm)</label><input id="s_a" data-k="a" inputmode="decimal"></div>
+      <div><label for="s_b">Prism (ppm)</label><input id="s_b" data-k="b" inputmode="decimal"></div>
+      <div><label for="s_ar">Reflectorless (mm)</label><input id="s_ar" data-k="ar" inputmode="decimal"></div>
+      <div><label for="s_br">Reflectorless (ppm)</label><input id="s_br" data-k="br" inputmode="decimal"></div>
+      <div><label for="s_idx">Index limit (&Prime;)</label><input id="s_idx" data-k="idx" inputmode="decimal"></div>
       <div><label for="s_c2">2C limit (&Prime;)</label><input id="s_c2" data-k="c2" inputmode="decimal"></div>
       <div><label for="s_ang">Angle accuracy (&Prime;)</label><input id="s_ang" data-k="ang" inputmode="decimal"></div>
-      <div><label for="s_k">Traverse angle limit, k (&Prime;&radic;n)</label><input id="s_k" data-k="k" inputmode="decimal"></div>
-      <div><label for="s_sf">Scale factor on distances</label><input id="s_sf" data-k="sf" inputmode="decimal"></div>
-      <div><label for="s_fmt">Angle format</label><select id="s_fmt" data-k="fmt"><option value="dms">DD.MMSS</option><option value="dd">Decimal degrees</option></select></div>
+      <div><label for="s_k">Traverse k (&Prime;&radic;n)</label><input id="s_k" data-k="k" inputmode="decimal"></div>
+      <div><label for="s_sf">Scale factor</label><input id="s_sf" data-k="sf" inputmode="decimal"></div>
+      <div class="wide"><label for="s_fmt">Angle format</label><select id="s_fmt" data-k="fmt"><option value="dms">DD.MMSS</option><option value="dd">Decimal degrees</option></select></div>
     </div>
     <p class="small">Face difference allowed is &radic;2 &times; (fixed part + ppm &times; distance in km). The triangle angle-sum limit is about 2&radic;6 &times; angle accuracy. These are approximate 2&sigma; figures, not a standard. Use your project specification for traverse limits.</p>
   </div>
