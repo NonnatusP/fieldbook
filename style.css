@@ -131,3 +131,18 @@ canvas{width:100%;height:auto;background:var(--wash);border:1px solid var(--rule
 @media(max-height:760px){h2.page{display:none}h2.page.list{display:flex}.card{padding:8px 10px 10px}}
 .set-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px 8px}.set-grid .wide{grid-column:1/-1}
 .set-grid input,.set-grid select{font-size:19px;padding:6px 8px}
+
+/* traverse working steps */
+details.step{padding:0}
+details.step>summary{list-style:none;cursor:pointer;min-height:46px;display:flex;align-items:center;justify-content:space-between;padding:6px 12px;font:700 20px var(--head);letter-spacing:.01em}
+details.step>summary::-webkit-details-marker{display:none}
+details.step>summary::after{content:"";width:9px;height:9px;border-right:2.5px solid var(--ink);border-bottom:2.5px solid var(--ink);transform:rotate(45deg);margin:-4px 4px 0 0;transition:transform .15s}
+details.step[open]>summary::after{transform:rotate(-135deg);margin-top:4px}
+details.step>summary:focus-visible{outline:3px solid var(--amber);outline-offset:-3px}
+details.step>:not(summary){margin-left:12px;margin-right:12px}
+details.step>table{width:calc(100% - 24px)}
+details.step>:last-child{margin-bottom:12px}
+details.step table{font-size:14px}
+details.step th,details.step td{padding:6px 4px}
+tr.tot td{border-top:2px solid var(--ink);font-weight:700;background:var(--wash)}
+@media(prefers-reduced-motion:reduce){details.step>summary::after{transition:none}}

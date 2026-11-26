@@ -23,7 +23,7 @@
     setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
   }
   const f1 = x => isFinite(x) ? (Math.abs(x) < 0.05 ? '0.0' : x.toFixed(1)) : '-';
-  const f3 = x => isFinite(x) ? x.toFixed(3) : '-';
+  const f3 = x => isFinite(x) ? (x.toFixed(3) === '-0.000' ? '0.000' : x.toFixed(3)) : '-';
   const chip = (cls, t) => '<span class="chip ' + cls + '">' + t + '</span>';
 
   /* ---------- tabs ---------- */
@@ -182,13 +182,40 @@
       ['bear:Bearings', 'ang:Angles', 'raw:Unadjusted'].map(s => { const [k, l] = s.split(':'); return '<label style="display:flex;gap:6px;align-items:center;margin:0 10px 0 0;font-size:14px;color:var(--ink)"><input type="checkbox" style="width:22px;min-height:22px" data-opt="' + k + '"' + (T.opts[k] ? ' checked' : '') + '>' + l + '</label>'; }).join('') +
       '</div><div id="sketch" class="scroll" style="margin-top:8px">' + sketchSVG(r, T.opts) + '</div>' +
       '<div class="btns"><button id="svgPng" class="sec">Save PNG</button><button id="svgSvg" class="sec">Save SVG</button></div></div>';
-    h += '<div class="card"><h3>Adjusted coordinates</h3><div class="scroll"><table><tr><th>Stn</th><th>Easting</th><th>Northing</th></tr>' +
-      r.coords.map((c, i) => '<tr><td>' + esc(c.n) + (!r.link && i === r.coords.length - 1 ? ' (closing)' : '') + '</td><td>' + c.E.toFixed(3) + '</td><td>' + c.N.toFixed(3) + '</td></tr>').join('') + '</table></div></div>';
-    h += '<div class="card"><h3>Legs</h3><div class="scroll"><table><tr><th>Leg</th><th>Bearing</th><th>HD</th><th>ΔN</th><th>ΔE</th><th>corr N</th><th>corr E</th><th>adj ΔN</th><th>adj ΔE</th></tr>' +
-      r.legs.map(l => '<tr><td>' + esc(l.from + '-' + l.to) + '</td><td>' + C.fmtDMS(l.bearing, 0) + '</td><td>' + l.hd.toFixed(3) + '</td><td>' + f3(l.dN) + '</td><td>' + f3(l.dE) + '</td><td>' + f3(l.cN) + '</td><td>' + f3(l.cE) + '</td><td>' + f3(l.aN) + '</td><td>' + f3(l.aE) + '</td></tr>').join('') + '</table></div></div>';
-    h += '<div class="card"><h3>Angles</h3><div class="scroll"><table><tr><th>Stn</th><th>Observed</th><th>Corr</th><th>Adjusted</th></tr>' +
-      r.angles.map(a => '<tr><td>' + esc(a.n) + '</td><td>' + C.fmtDMS(a.obs, 1) + '</td><td>' + f1(a.corr) + '″</td><td>' + C.fmtDMS(a.adj, 1) + '</td></tr>').join('') + '</table></div>' +
-      '<div class="btns"><button id="tCsv" class="sec">Export results CSV</button></div></div>';
+    const sum = (arr, f) => arr.reduce((t, x) => t + f(x), 0);
+    const f4 = x => isFinite(x) ? (x.toFixed(4) === '-0.0000' ? '0.0000' : x.toFixed(4)) : '-';
+    const step = (t, body, open) => '<details class="card step"' + (open ? ' open' : '') + '><summary>' + t + '</summary>' + body + '</details>';
+    // 1. angles
+    const per = r.angles[0] ? r.angles[0].corr : 0;
+    const aTxt = r.link ? 'Bearing carried through the angles reaches the closing line ' + f1(r.angMisSec) + '″ out.' : 'Sum of observed angles is ' + f1(r.angMisSec) + '″ from the theoretical ' + (r.theo != null ? r.theo + '°' : 'sum') + ', which is (n' + (r.dir === 'clockwise' ? '+2' : '−2') + ')×180°.';
+    h += step('1. Adjust the angles',
+      '<p class="small" style="margin-top:0">' + aTxt + ' Shared equally over ' + r.n + ' angles: <b>' + (per >= 0 ? '+' : '') + f1(per) + '″ each</b>.</p>' +
+      '<table><tr><th>Stn</th><th>Observed</th><th>Corr</th><th>Adjusted</th></tr>' +
+      r.angles.map(a => '<tr><td>' + esc(a.n) + '</td><td>' + C.fmtDMS(a.obs, 1) + '</td><td>' + f1(a.corr) + '″</td><td>' + C.fmtDMS(a.adj, 1) + '</td></tr>').join('') + '</table>', true);
+    // 2. bearings and differences
+    h += step('2. Bearings and coordinate differences',
+      '<p class="small" style="margin-top:0">Each bearing = previous bearing + 180° + adjusted angle. ΔN = HD cos(bearing), ΔE = HD sin(bearing).</p>' +
+      '<table><tr><th>Leg</th><th>Bearing</th><th>HD</th><th>ΔN</th><th>ΔE</th></tr>' +
+      r.legs.map(l => '<tr><td>' + esc(l.from + '-' + l.to) + '</td><td>' + C.fmtDMS(l.bearing, 0) + '</td><td>' + l.hd.toFixed(3) + '</td><td>' + f3(l.dN) + '</td><td>' + f3(l.dE) + '</td></tr>').join('') +
+      '<tr class="tot"><td>Σ</td><td></td><td>' + r.sumD.toFixed(3) + '</td><td>' + f3(r.sN) + '</td><td>' + f3(r.sE) + '</td></tr></table>', false);
+    // 3 and 4. Bowditch
+    const reqN = r.sN - r.eN, reqE = r.sE - r.eE;
+    const bow = (ax, err, req, key, ckey, akey) => {
+      const k = -err / r.sumD;
+      return '<p class="small" style="margin-top:0">Misclosure ' + ax + ' = ' + f3(err) + ' m. Correction = −(' + f3(err) + ' ÷ ' + r.sumD.toFixed(3) + ') × HD = <b>' + (k >= 0 ? '+' : '') + k.toFixed(6) + ' × HD</b>, longer legs take more.</p>' +
+        '<table><tr><th>Leg</th><th>HD</th><th>Δ' + ax + '</th><th>Corr</th><th>Adjusted</th></tr>' +
+        r.legs.map(l => '<tr><td>' + esc(l.from + '-' + l.to) + '</td><td>' + l.hd.toFixed(3) + '</td><td>' + f3(l[key]) + '</td><td>' + f4(l[ckey]) + '</td><td>' + f3(l[akey]) + '</td></tr>').join('') +
+        '<tr class="tot"><td>Σ</td><td>' + r.sumD.toFixed(3) + '</td><td>' + f3(sum(r.legs, l => l[key])) + '</td><td>' + f4(sum(r.legs, l => l[ckey])) + '</td><td>' + f3(sum(r.legs, l => l[akey])) + '</td></tr></table>' +
+        '<p class="small">Adjusted Σ should be ' + f3(req) + ' ' + (r.link ? '(end minus start)' : '(a closed loop returns to the start)') + '. Check: ' + chip(Math.abs(sum(r.legs, l => l[akey]) - req) < 0.0005 ? 'ok' : 'bad', Math.abs(sum(r.legs, l => l[akey]) - req) < 0.0005 ? 'closes' : 'does not close') + '</p>';
+    };
+    h += step('3. Bowditch on northings', bow('N', r.eN, reqN, 'dN', 'cN', 'aN'), false);
+    h += step('4. Bowditch on eastings', bow('E', r.eE, reqE, 'dE', 'cE', 'aE'), false);
+    // 5. coordinates
+    h += step('5. Adjusted coordinates',
+      '<p class="small" style="margin-top:0">Each station = previous station + adjusted Δ.</p>' +
+      '<table><tr><th>Stn</th><th>Easting</th><th>Northing</th></tr>' +
+      r.coords.map((c, i) => '<tr><td>' + esc(c.n) + (!r.link && i === r.coords.length - 1 ? ' (closing)' : '') + '</td><td>' + c.E.toFixed(3) + '</td><td>' + c.N.toFixed(3) + '</td></tr>').join('') + '</table>' +
+      '<div class="btns"><button id="tCsv" class="sec">Export results CSV</button></div>', true);
     $('tOut').innerHTML = h;
   }
 
